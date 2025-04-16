@@ -32,7 +32,8 @@ COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/scripts ./scripts
 COPY --from=build /app/.db ./.db
 COPY --from=build /app/tsconfig.json ./tsconfig.json
-COPY --from=build /app/dist ./dist  # If TypeScript is compiled to `dist`
+COPY --from=build /app/dist ./dist/  
+# If TypeScript is compiled to `dist`
 
 # Set environment variables
 ENV NODE_ENV=production
