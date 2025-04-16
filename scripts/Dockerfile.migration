@@ -1,5 +1,5 @@
-# Use Node.js 18 Alpine as base
-FROM node:18-alpine
+# Stage 1: Build Stage
+FROM node:18-alpine AS build
 
 # Set working directory
 WORKDIR /app
@@ -10,16 +10,32 @@ RUN apk add --no-cache python3 make g++
 # Copy package files and tsconfig
 COPY package*.json tsconfig.json ./
 
-# Copy scripts and data
-COPY scripts ./scripts
-COPY .db ./.db
-
 # Install dependencies
 RUN npm install
 RUN npm install --save-dev @types/mongoose
 
+# Copy scripts and data
+COPY scripts ./scripts
+COPY .db ./.db
+
+# Compile TypeScript to JavaScript (if applicable)
+RUN npx tsc --project tsconfig.json
+
+# Stage 2: Runtime Stage (Distroless)
+FROM gcr.io/distroless/nodejs18
+
+# Set working directory
+WORKDIR /app
+
+# Copy only necessary files from the build stage
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/scripts ./scripts
+COPY --from=build /app/.db ./.db
+COPY --from=build /app/tsconfig.json ./tsconfig.json
+COPY --from=build /app/dist ./dist  # If TypeScript is compiled to `dist`
+
 # Set environment variables
-ENV NODE_ENV=development
+ENV NODE_ENV=production
 
 # Command to run migration
-CMD ["npx", "ts-node", "--project", "scripts/tsconfig.json", "scripts/migrate-data.ts"]
+CMD ["scripts/migrate-data.js"]

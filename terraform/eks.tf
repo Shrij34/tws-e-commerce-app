@@ -71,3 +71,8 @@ data "aws_instances" "eks_nodes" {
 
   depends_on = [module.eks]
 }
+
+output "cluster_name" {
+  value       = module.eks.cluster_id
+  description = "ECOMMERCE-APP-CLUSTER"
+}
