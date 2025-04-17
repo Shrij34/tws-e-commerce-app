@@ -1,5 +1,5 @@
 data "aws_ami" "os_image" {
-  owners = ["099720109477"]
+  owners = ["099720109477"] # Canonical Group Limited (Canonical - Ubuntu) 
   most_recent = true
   filter {
     name   = "state"
@@ -7,7 +7,7 @@ data "aws_ami" "os_image" {
   }
   filter {
     name = "name"
-    values = ["ubuntu/images/hvm-ssd-gp3/*24.04-amd64*"]
+    values = ["ubuntu/images/hvm-ssd-gp3/*24.04-amd64*"] # Ubuntu 24.04 LTS
   }
 }
 

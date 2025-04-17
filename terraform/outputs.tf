@@ -8,6 +8,10 @@ output "vpc_id" {
   value       = module.vpc.vpc_id
 }
 
+output "ami_id" {
+  value       = data.aws_ami.os_image.id
+  description = "The ID of the most recent Ubuntu 24.04 LTS AMI"
+}
 
 output "eks_cluster_name" {
   description = "EKS cluster name"
