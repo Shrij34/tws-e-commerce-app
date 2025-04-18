@@ -74,7 +74,8 @@ resource "aws_instance" "testinstance" {
   instance_type   = var.instance_type 
   key_name        = aws_key_pair.deployer.key_name
   security_groups = [aws_security_group.allow_user_to_connect.name]
-  user_data = file("${path.module}/install_tools.sh")
+  #user_data = file("${path.module}/install_tools.sh")
+  user_data = file("${path.module}/scripts/install_tools.sh")
   tags = {
     Name = "Jenkins-Automate"
   }

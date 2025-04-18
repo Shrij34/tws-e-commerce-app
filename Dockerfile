@@ -1,5 +1,5 @@
 # Stage 1: Development/Build Stage
-FROM node:18-alpine AS builder
+FROM node:23-alpine AS builder
 
 # Set working directory
 WORKDIR /app
@@ -19,8 +19,9 @@ COPY . .
 # Build the Next.js application
 RUN npm run build
 
-# Stage 2: Production Stage
-FROM node:18-alpine AS runner
+# Stage 2: Production (using Distroless)
+FROM gcr.io/distroless/nodejs18 AS runner
+
 
 # Set working directory
 WORKDIR /app
@@ -34,6 +35,16 @@ COPY --from=builder /app/public ./public
 ENV NODE_ENV=production
 ENV PORT=3000
 
+
+# Set the user to run the applicationGoogle’s distroless images don't include package managers 
+# like apk or user management utilities like adduser
+# run the container as a predefined user ID
+# (in this case, UID 1000) to avoid running as root.
+# This is a common practice in distroless images to enhance security.
+
+
+
+USER 1000
 # Expose the port the app runs on
 EXPOSE 3000
 

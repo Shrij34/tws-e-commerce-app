@@ -1,0 +1,112 @@
+---
+- name: Install required tools on EC2 instance
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Update apt package list
+      apt:
+        update_cache: yes
+
+    - name: Install core dependencies
+      apt:
+        name: 
+          - fontconfig
+          - openjdk-17-jre
+        state: present
+
+    - name: Add Jenkins repository key
+      get_url:
+        url: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+        dest: /usr/share/keyrings/jenkins-keyring.asc
+
+    - name: Add Jenkins repository
+      lineinfile:
+        path: /etc/apt/sources.list.d/jenkins.list
+        line: "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/"
+        create: yes
+
+    - name: Update apt repositories
+      apt:
+        update_cache: yes
+
+    - name: Install Jenkins
+      apt:
+        name: jenkins
+        state: present
+
+    - name: Start and enable Jenkins service
+      systemd:
+        name: jenkins
+        state: started
+        enabled: yes
+
+    - name: Install Docker
+      apt:
+        name: docker.io
+        state: present
+
+    - name: Add user to Docker group
+      user:
+        name: "{{ ansible_user_id }}"
+        groups: docker
+        append: yes
+
+    - name: Add Jenkins to Docker group
+      user:
+        name: jenkins
+        groups: docker
+        append: yes
+
+    - name: Restart Docker and Jenkins services
+      systemd:
+        name: "{{ item }}"
+        state: restarted
+      loop:
+        - docker
+        - jenkins
+
+    - name: Install dependencies and Trivy
+      apt:
+        name: 
+          - wget
+          - apt-transport-https
+          - gnupg
+          - lsb-release
+          - snapd
+        state: present
+
+    - name: Add Trivy repository key
+      shell: |
+        wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | apt-key add -
+
+    - name: Add Trivy repository
+      shell: |
+        echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | tee -a /etc/apt/sources.list.d/trivy.list
+
+    - name: Update apt package list again
+      apt:
+        update_cache: yes
+
+    - name: Install Trivy
+      apt:
+        name: trivy
+        state: present
+
+    - name: Install AWS CLI
+      snap:
+        name: aws-cli
+        classic: yes
+        state: present
+
+    - name: Install Helm
+      snap:
+        name: helm
+        classic: yes
+        state: present
+
+    - name: Install Kubectl
+      snap:
+        name: kubectl
+        classic: yes
+        state: present
